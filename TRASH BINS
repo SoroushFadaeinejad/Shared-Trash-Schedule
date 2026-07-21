@@ -1,0 +1,309 @@
+
+<style>
+  :root{
+    --bg: #1b2420;
+    --bg-2: #222d27;
+    --paper: #f5f1e8;
+    --paper-dim: #e8e2d3;
+    --ink: #1b2420;
+    --ink-soft: #5c6b5e;
+    --cone: #e8792c;
+    --cone-dim: #c96a26;
+    --pine: #3f6b4a;
+    --line: rgba(245,241,232,0.14);
+    --mono: 'Courier New', ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; background:var(--bg); color:var(--paper);
+    font-family:var(--sans);
+    min-height:100vh;
+  }
+  .wrap{ max-width:520px; margin:0 auto; padding:28px 18px 60px; }
+
+  .eyebrow{
+    font-family:var(--mono); font-size:12px; letter-spacing:2px; text-transform:uppercase;
+    color:var(--cone); margin:0 0 6px;
+  }
+  h1{
+    font-family:var(--mono); font-weight:700; font-size:22px; margin:0 0 2px;
+    letter-spacing:0.5px;
+  }
+  .sub{ color:#a9b3a9; font-size:13.5px; margin:0 0 26px; }
+
+  /* Hero: curb-stencil card */
+  .hero{
+    background:var(--paper); color:var(--ink); border-radius:14px;
+    padding:26px 22px 22px; position:relative; overflow:hidden;
+    box-shadow:0 18px 40px -18px rgba(0,0,0,0.6);
+  }
+  .hero::before{
+    content:""; position:absolute; inset:0;
+    background-image:repeating-linear-gradient(135deg, rgba(27,36,32,0.035) 0 2px, transparent 2px 14px);
+    pointer-events:none;
+  }
+  .hero-label{
+    font-family:var(--mono); font-size:11px; letter-spacing:2px; text-transform:uppercase;
+    color:var(--ink-soft); margin:0 0 10px;
+  }
+  .stencil{
+    font-family:var(--mono); font-weight:700; font-size:64px; line-height:1;
+    letter-spacing:1px; margin:0 0 14px; color:var(--ink);
+  }
+  .stencil-unit{
+    display:inline-block; padding:2px 10px; border:4px solid var(--ink);
+    border-radius:6px;
+  }
+  .hero-rows{ display:flex; gap:14px; margin-top:16px; flex-wrap:wrap; }
+  .hero-chip{
+    flex:1; min-width:150px; background:var(--paper-dim); border-radius:10px; padding:12px 14px;
+  }
+  .hero-chip .k{ font-family:var(--mono); font-size:10.5px; letter-spacing:1.5px; text-transform:uppercase; color:var(--ink-soft); margin:0 0 4px;}
+  .hero-chip .v{ font-size:15px; font-weight:600; margin:0; }
+
+  .toggles{ display:flex; gap:10px; margin-top:18px; }
+  .toggle-btn{
+    flex:1; padding:13px 10px; border-radius:10px; border:2px solid var(--ink);
+    background:transparent; color:var(--ink); font-family:var(--sans); font-weight:600;
+    font-size:14px; cursor:pointer; transition:all .15s ease;
+  }
+  .toggle-btn.done{ background:var(--pine); border-color:var(--pine); color:#fff; }
+  .toggle-btn:active{ transform:scale(0.97); }
+
+  /* Upcoming strip */
+  .section-title{
+    font-family:var(--mono); font-size:12px; letter-spacing:2px; text-transform:uppercase;
+    color:#8b978c; margin:34px 0 12px;
+  }
+  .weeks{
+    display:flex; flex-direction:column; gap:8px;
+  }
+  .week-row{
+    display:flex; align-items:center; gap:12px;
+    background:var(--bg-2); border:1px solid var(--line); border-radius:10px;
+    padding:12px 14px;
+  }
+  .week-row.today{ border-color:var(--cone); background:rgba(232,121,44,0.08); }
+  .week-date{ font-family:var(--mono); font-size:12px; color:#9aa69b; width:78px; flex-shrink:0; }
+  .week-unit{
+    font-family:var(--mono); font-weight:700; font-size:14px;
+    background:var(--paper); color:var(--ink); border-radius:5px; padding:3px 9px;
+  }
+  .week-status{ margin-left:auto; font-size:16px; opacity:0.85; }
+
+  /* Order strip */
+  .order{
+    display:flex; align-items:center; gap:8px; margin-top:8px; flex-wrap:wrap;
+    font-family:var(--mono); font-size:13px; color:#a9b3a9;
+  }
+  .order span.u{ background:var(--bg-2); border:1px solid var(--line); border-radius:6px; padding:4px 9px; color:var(--paper); }
+  .order .arrow{ color:var(--cone); }
+
+  .cal-btn{
+    display:block; width:100%; margin-top:26px; padding:15px; text-align:center;
+    background:var(--cone); color:#1b2420; font-weight:700; font-family:var(--sans);
+    border:none; border-radius:10px; font-size:14.5px; cursor:pointer; text-decoration:none;
+  }
+  .cal-note{ font-size:12px; color:#8b978c; text-align:center; margin-top:9px; line-height:1.5; }
+
+  footer{ text-align:center; margin-top:30px; font-size:11.5px; color:#5c675e; font-family:var(--mono); }
+</style>
+
+<div class="wrap">
+  <p class="eyebrow">Woodward St · 4 units</p>
+  <h1>Trash Schedule</h1>
+  <p class="sub">Cans out Monday 7:00 PM · back in Tuesday morning after Recology</p>
+
+  <div class="hero">
+    <p class="hero-label" id="hero-label">This week</p>
+    <div class="stencil"><span class="stencil-unit" id="hero-unit">--</span></div>
+    <div class="hero-rows">
+      <div class="hero-chip">
+        <p class="k">Out</p>
+        <p class="v" id="out-date">--</p>
+      </div>
+      <div class="hero-chip">
+        <p class="k">In</p>
+        <p class="v" id="in-date">--</p>
+      </div>
+    </div>
+    <div class="toggles">
+      <button class="toggle-btn" id="btn-out">Mark cans out ✓</button>
+      <button class="toggle-btn" id="btn-in">Mark cans in ✓</button>
+    </div>
+  </div>
+
+  <p class="section-title">Rotation order</p>
+  <div class="order">
+    <span class="u">73</span><span class="arrow">→</span>
+    <span class="u">71</span><span class="arrow">→</span>
+    <span class="u">73A</span><span class="arrow">→</span>
+    <span class="u">71A</span><span class="arrow">→</span>
+    <span style="color:#5c675e">repeats every 4 weeks</span>
+  </div>
+
+  <p class="section-title">Next 8 weeks</p>
+  <div class="weeks" id="weeks-list"></div>
+
+  <a class="cal-btn" id="cal-btn" href="#" download="woodward-trash-schedule.ics">Add reminders to my phone calendar</a>
+  <p class="cal-note">Downloads a calendar file with recurring alerts for all 4 units —<br>Monday 7:00 PM (cans out) and Tuesday 7:00 AM (cans in).</p>
+
+  <footer>Order confirmed against the shared schedule sheet · anchor: Jul 6 2026 = Unit 73</footer>
+</div>
+
+<script>
+(function(){
+  const ORDER = ['73','71','73A','71A'];
+  const ANCHOR = new Date('2026-07-06T00:00:00'); // confirmed Monday, Unit 73's turn
+
+  function mondayOnOrAfter(d){
+    const day = d.getDay(); // 0 Sun ... 1 Mon
+    const diff = (8 - day) % 7;
+    const r = new Date(d);
+    r.setDate(d.getDate() + (day === 1 ? 0 : diff));
+    r.setHours(0,0,0,0);
+    return r;
+  }
+
+  function unitForMonday(date){
+    const diffWeeks = Math.round((date - ANCHOR) / (7*24*3600*1000));
+    let idx = diffWeeks % 4;
+    if (idx < 0) idx += 4;
+    return ORDER[idx];
+  }
+
+  function fmt(d){
+    return d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+  }
+
+  const today = new Date();
+  const thisMonday = mondayOnOrAfter(new Date(today.getFullYear(), today.getMonth(), today.getDate()));
+  // if today is Tue-Sun after a Monday already passed this week, keep using the most recent Monday for "this week"
+  const nowDay = today.getDay();
+  let activeMonday = new Date(thisMonday);
+  if (nowDay !== 1 && nowDay !== 0) {
+    // walk back to the Monday of the current week
+    const back = new Date(today);
+    const offset = (nowDay + 6) % 7;
+    back.setDate(today.getDate() - offset);
+    back.setHours(0,0,0,0);
+    activeMonday = back;
+  } else if (nowDay === 0) {
+    const back = new Date(today);
+    back.setDate(today.getDate() - 6);
+    back.setHours(0,0,0,0);
+    activeMonday = back;
+  }
+
+  const activeUnit = unitForMonday(activeMonday);
+  const outDate = new Date(activeMonday);
+  const inDate = new Date(activeMonday); inDate.setDate(inDate.getDate()+1);
+
+  document.getElementById('hero-unit').textContent = 'Unit ' + activeUnit;
+  document.getElementById('out-date').textContent = 'Mon ' + fmt(outDate) + ', 7:00 PM';
+  document.getElementById('in-date').textContent = 'Tue ' + fmt(inDate) + ' morning';
+
+  // Upcoming list
+  const list = document.getElementById('weeks-list');
+  for (let i=0;i<8;i++){
+    const m = new Date(activeMonday); m.setDate(m.getDate() + i*7);
+    const u = unitForMonday(m);
+    const row = document.createElement('div');
+    row.className = 'week-row' + (i===0 ? ' today' : '');
+    row.innerHTML = `<span class="week-date">${fmt(m)}</span><span class="week-unit">Unit ${u}</span>${i===0 ? '<span class="week-status">👈 this week</span>' : ''}`;
+    list.appendChild(row);
+  }
+
+  // Shared done-state per week key
+  const weekKey = 'trash:' + activeMonday.toISOString().slice(0,10);
+  const btnOut = document.getElementById('btn-out');
+  const btnIn = document.getElementById('btn-in');
+
+  async function loadState(){
+    try{
+      const res = await window.storage.get(weekKey, true);
+      if (res && res.value){
+        const state = JSON.parse(res.value);
+        btnOut.classList.toggle('done', !!state.out);
+        btnIn.classList.toggle('done', !!state.in);
+      }
+    }catch(e){ /* no state yet */ }
+  }
+
+  async function saveState(patch){
+    let state = {out:false, in:false};
+    try{
+      const res = await window.storage.get(weekKey, true);
+      if (res && res.value) state = JSON.parse(res.value);
+    }catch(e){}
+    state = Object.assign(state, patch);
+    try{
+      await window.storage.set(weekKey, JSON.stringify(state), true);
+    }catch(e){ console.error('storage failed', e); }
+    btnOut.classList.toggle('done', !!state.out);
+    btnIn.classList.toggle('done', !!state.in);
+  }
+
+  btnOut.addEventListener('click', async ()=>{
+    const nowDone = !btnOut.classList.contains('done');
+    await saveState({out: nowDone});
+  });
+  btnIn.addEventListener('click', async ()=>{
+    const nowDone = !btnIn.classList.contains('done');
+    await saveState({in: nowDone});
+  });
+
+  loadState();
+
+  // Build ICS calendar download
+  function pad(n){ return n<10 ? '0'+n : ''+n; }
+  function icsDate(d, h, m){
+    const dt = new Date(d); dt.setHours(h, m, 0, 0);
+    return dt.getFullYear() + pad(dt.getMonth()+1) + pad(dt.getDate()) + 'T' + pad(dt.getHours()) + pad(dt.getMinutes()) + '00';
+  }
+
+  const UNIT_FIRST_MONDAY = {
+    '73':  new Date('2026-07-06T00:00:00'),
+    '71':  new Date('2026-07-13T00:00:00'),
+    '73A': new Date('2026-07-20T00:00:00'),
+    '71A': new Date('2026-07-27T00:00:00'),
+  };
+
+  let ics = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Woodward St//Trash Schedule//EN\r\nCALSCALE:GREGORIAN\r\n';
+
+  Object.keys(UNIT_FIRST_MONDAY).forEach(unit=>{
+    const start = UNIT_FIRST_MONDAY[unit];
+    const inDay = new Date(start); inDay.setDate(inDay.getDate()+1);
+    const uidBase = 'woodward-' + unit.toLowerCase().replace(/\s+/g,'') + '-' + Date.now();
+
+    // Out event, Monday 7:00 PM, repeats every 4 weeks
+    ics += 'BEGIN:VEVENT\r\n';
+    ics += 'UID:' + uidBase + '-out@woodward\r\n';
+    ics += 'DTSTART;TZID=America/Los_Angeles:' + icsDate(start, 19, 0) + '\r\n';
+    ics += 'DTEND;TZID=America/Los_Angeles:' + icsDate(start, 19, 30) + '\r\n';
+    ics += 'RRULE:FREQ=WEEKLY;INTERVAL=4;COUNT=26\r\n';
+    ics += 'SUMMARY:🗑️ Put cans out — Unit ' + unit + '\r\n';
+    ics += 'DESCRIPTION:It\\\'s Unit ' + unit + '\\\'s week. Put all cans out at the curb tonight.\r\n';
+    ics += 'BEGIN:VALARM\r\nACTION:DISPLAY\r\nDESCRIPTION:Cans out tonight\r\nTRIGGER:-PT0M\r\nEND:VALARM\r\n';
+    ics += 'END:VEVENT\r\n';
+
+    // In event, Tuesday 7:00 AM, repeats every 4 weeks
+    ics += 'BEGIN:VEVENT\r\n';
+    ics += 'UID:' + uidBase + '-in@woodward\r\n';
+    ics += 'DTSTART;TZID=America/Los_Angeles:' + icsDate(inDay, 7, 0) + '\r\n';
+    ics += 'DTEND;TZID=America/Los_Angeles:' + icsDate(inDay, 7, 30) + '\r\n';
+    ics += 'RRULE:FREQ=WEEKLY;INTERVAL=4;COUNT=26\r\n';
+    ics += 'SUMMARY:🗑️ Bring cans in — Unit ' + unit + '\r\n';
+    ics += 'DESCRIPTION:Recology already came. Bring the cans back in.\r\n';
+    ics += 'BEGIN:VALARM\r\nACTION:DISPLAY\r\nDESCRIPTION:Bring cans in\r\nTRIGGER:-PT0M\r\nEND:VALARM\r\n';
+    ics += 'END:VEVENT\r\n';
+  });
+
+  ics += 'END:VCALENDAR\r\n';
+
+  const blob = new Blob([ics], {type:'text/calendar'});
+  const url = URL.createObjectURL(blob);
+  document.getElementById('cal-btn').setAttribute('href', url);
+})();
+</script>
