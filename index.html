@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -117,9 +118,9 @@
   </div>
 
   <script>
-    // Pattern base: June 22 is 71A
-    const baseDate = new Date(2024, 5, 22); // June 22, 2024
-    const rotation = ["71A", "73A", "73", "71"];
+    // Pattern base: Monday, July 1, 2024 (same collection week as prior Saturday reference) is 73
+    const baseDate = new Date(2024, 6, 1); // July 1, 2024 (Monday)
+    const rotation = ["73", "71", "73A", "71A"];
 
     function getUnitForDate(date) {
       const diffTime = date - baseDate;
@@ -155,11 +156,11 @@
         monthSelect.appendChild(opt);
       });
 
-      // Find next Saturday for current duty
-      let nextSat = new Date(today);
-      nextSat.setDate(today.getDate() + ((6 - today.getDay() + 7) % 7));
-      document.getElementById("current-date").textContent = nextSat.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-      document.getElementById("current-unit").textContent = getUnitForDate(nextSat);
+      // Find next Monday for current duty
+      let nextMon = new Date(today);
+      nextMon.setDate(today.getDate() + ((1 - today.getDay() + 7) % 7));
+      document.getElementById("current-date").textContent = nextMon.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+      document.getElementById("current-unit").textContent = getUnitForDate(nextMon);
 
       renderSchedule();
     }
@@ -170,9 +171,9 @@
       const list = document.getElementById("schedule-list");
       list.innerHTML = "";
 
-      // Get all Saturdays in selected month
+      // Get all Mondays in selected month
       let date = new Date(year, month, 1);
-      while (date.getDay() !== 6) {
+      while (date.getDay() !== 1) {
         date.setDate(date.getDate() + 1);
       }
 
