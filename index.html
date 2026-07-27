@@ -6,11 +6,16 @@
   <title>Woodward Trash Schedule</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Trash Schedule">
   <meta name="theme-color" content="#2563eb">
-  
-  <!-- Web App Icon (Embedded SVG) -->
-  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='%232563eb'><rect width='100' height='100' rx='20' fill='%232563eb'/><path fill='white' d='M35 30h30v5H35zM30 40h40v40H30zM40 48h5v24h-5zM55 48h5v24h-5z'/></svg>">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='%232563eb'><rect width='100' height='100' rx='20' fill='%232563eb'/><path fill='white' d='M35 30h30v5H35zM30 40h40v40H30zM40 48h5v24h-5zM55 48h5v24h-5z'/></svg>">
+
+  <!-- Web App Manifest (enables "Add to Home Screen" on Android/Chrome) -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Home Screen Icons -->
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 
   <style>
     body {
@@ -129,8 +134,10 @@
       const monthSelect = document.getElementById("month-select");
       const today = new Date();
 
-      // Populate Years (2024 to 2030)
-      for (let y = 2024; y <= 2030; y++) {
+      // Populate Years: current year through 10 years ahead
+      const startYear = today.getFullYear();
+      const endYear = startYear + 10;
+      for (let y = startYear; y <= endYear; y++) {
         const opt = document.createElement("option");
         opt.value = y;
         opt.textContent = y;
