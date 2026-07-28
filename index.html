@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -129,9 +130,94 @@
       color: #6b7280;
       margin-top: 10px;
     }
+    .notify-collapsed {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 14px;
+      color: #374151;
+    }
+    .notify-change-btn {
+      background: none;
+      border: none;
+      color: #2563eb;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 4px 8px;
+    }
+    .install-banner {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      max-width: 400px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 14px;
+      box-shadow: 0 6px 16px -2px rgba(0, 0, 0, 0.15);
+      padding: 14px 16px;
+      display: none;
+      align-items: center;
+      gap: 12px;
+      z-index: 1000;
+    }
+    .install-banner-icon {
+      font-size: 28px;
+      flex-shrink: 0;
+    }
+    .install-banner-text {
+      flex: 1;
+      font-size: 13px;
+      color: #374151;
+      line-height: 1.4;
+    }
+    .install-banner-text strong {
+      display: block;
+      font-size: 14px;
+      color: #1f2937;
+      margin-bottom: 2px;
+    }
+    .install-banner-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .install-banner-btn {
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .install-banner-dismiss {
+      background: none;
+      border: none;
+      color: #9ca3af;
+      font-size: 12px;
+      cursor: pointer;
+      padding: 2px;
+    }
   </style>
 </head>
 <body>
+
+  <div class="install-banner" id="install-banner">
+    <div class="install-banner-icon">🗑️</div>
+    <div class="install-banner-text">
+      <strong id="install-banner-title">Add to Home Screen</strong>
+      <span id="install-banner-desc">Get the app icon and notifications by adding this to your Home Screen.</span>
+    </div>
+    <div class="install-banner-actions">
+      <button class="install-banner-btn" id="install-banner-action">Add</button>
+      <button class="install-banner-dismiss" id="install-banner-dismiss">Not now</button>
+    </div>
+  </div>
 
   <div class="card">
     <div class="header-icon">🗑️</div>
@@ -142,25 +228,31 @@
   </div>
 
   <div class="card">
-    <div class="highlight-label" style="margin-bottom: 10px;">Get Notified For Your Unit</div>
-    <div class="selector">
-      <select id="notify-unit-select">
-        <option value="71">71</option>
-        <option value="73">73</option>
-        <option value="71A">71A</option>
-        <option value="73A">73A</option>
-      </select>
-    </div>
-    <button class="notify-btn" id="notify-btn">Enable Notifications</button>
-    <div class="notify-status" id="notify-status">Choose your unit, then tap enable. On iPhone, add this site to your Home Screen first for notifications to work.</div>
-  </div>
-
-  <div class="card">
     <div class="selector">
       <select id="year-select"></select>
       <select id="month-select"></select>
     </div>
     <ul id="schedule-list"></ul>
+  </div>
+
+  <div class="card" id="notify-card">
+    <div id="notify-setup-view">
+      <div class="highlight-label" style="margin-bottom: 10px;">Get Notified For Your Unit</div>
+      <div class="selector">
+        <select id="notify-unit-select">
+          <option value="71">71</option>
+          <option value="73">73</option>
+          <option value="71A">71A</option>
+          <option value="73A">73A</option>
+        </select>
+      </div>
+      <button class="notify-btn" id="notify-btn">Enable Notifications</button>
+      <div class="notify-status" id="notify-status">Choose your unit, then tap enable. On iPhone, add this site to your Home Screen first for notifications to work.</div>
+    </div>
+    <div id="notify-collapsed-view" class="notify-collapsed" style="display: none;">
+      <span>🔔 Notified for unit <strong id="notify-collapsed-unit"></strong></span>
+      <button id="notify-change-btn" class="notify-change-btn">Change</button>
+    </div>
   </div>
 
   <script>
@@ -290,32 +382,140 @@
 
     init();
 
+    // --- Install to Home Screen banner ---
+    function setupInstallBanner() {
+      const banner = document.getElementById("install-banner");
+      const title = document.getElementById("install-banner-title");
+      const desc = document.getElementById("install-banner-desc");
+      const actionBtn = document.getElementById("install-banner-action");
+      const dismissBtn = document.getElementById("install-banner-dismiss");
+
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+      const alreadyDismissed = localStorage.getItem("installBannerDismissed") === "true";
+
+      if (isStandalone || alreadyDismissed) {
+        return; // already installed, or user said no thanks before
+      }
+
+      dismissBtn.addEventListener("click", () => {
+        banner.style.display = "none";
+        localStorage.setItem("installBannerDismissed", "true");
+      });
+
+      if (isIOS) {
+        // iOS has no programmatic install API — show instructions instead
+        title.textContent = "Add to Home Screen";
+        desc.textContent = "Tap the Share icon below, then \"Add to Home Screen\" — this is required for notifications to work on iPhone.";
+        actionBtn.textContent = "Got it";
+        actionBtn.addEventListener("click", () => {
+          banner.style.display = "none";
+        });
+        banner.style.display = "flex";
+      } else {
+        // Android/Chrome: listen for the native install prompt
+        let deferredPrompt = null;
+        window.addEventListener("beforeinstallprompt", (e) => {
+          e.preventDefault();
+          deferredPrompt = e;
+          banner.style.display = "flex";
+        });
+
+        actionBtn.addEventListener("click", async () => {
+          if (!deferredPrompt) {
+            banner.style.display = "none";
+            return;
+          }
+          deferredPrompt.prompt();
+          await deferredPrompt.userChoice;
+          deferredPrompt = null;
+          banner.style.display = "none";
+          localStorage.setItem("installBannerDismissed", "true");
+        });
+      }
+    }
+    setupInstallBanner();
+
     // --- Notification setup ---
+    function showCollapsedView(unit) {
+      document.getElementById("notify-setup-view").style.display = "none";
+      document.getElementById("notify-collapsed-view").style.display = "flex";
+      document.getElementById("notify-collapsed-unit").textContent = unit;
+    }
+
+    function showSetupView() {
+      document.getElementById("notify-setup-view").style.display = "block";
+      document.getElementById("notify-collapsed-view").style.display = "none";
+    }
+
     function setupNotifications() {
       const btn = document.getElementById("notify-btn");
       const status = document.getElementById("notify-status");
       const unitSelect = document.getElementById("notify-unit-select");
+      const changeBtn = document.getElementById("notify-change-btn");
+
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+
+      if (isIOS && !isStandalone) {
+        status.textContent = "On iPhone/iPad, you must add this site to your Home Screen first (Share icon → Add to Home Screen), then open it from the Home Screen icon before notifications will work.";
+        btn.textContent = "Add to Home Screen First";
+        btn.disabled = true;
+      }
 
       const savedUnit = localStorage.getItem("trashUnit");
+      const notifyEnabled = localStorage.getItem("trashNotifyEnabled") === "true";
+
       if (savedUnit) {
         unitSelect.value = savedUnit;
       }
+
+      if (savedUnit && notifyEnabled) {
+        showCollapsedView(savedUnit);
+      }
+
+      changeBtn.addEventListener("click", () => {
+        showSetupView();
+      });
 
       btn.addEventListener("click", async () => {
         const chosenUnit = unitSelect.value;
         btn.disabled = true;
         status.textContent = "Setting up...";
 
+        let settled = false;
+        const timeoutId = setTimeout(() => {
+          if (!settled) {
+            settled = true;
+            status.textContent = "This is taking too long — notifications might be blocked by your browser, an extension, or a slow connection. Try reloading the page, or check that ad-blockers aren't blocking onesignal.com.";
+            btn.disabled = false;
+          }
+        }, 10000);
+
         window.OneSignalDeferred = window.OneSignalDeferred || [];
         window.OneSignalDeferred.push(async function (OneSignal) {
           try {
             await OneSignal.Notifications.requestPermission();
+            const permission = OneSignal.Notifications.permission;
+            if (settled) return;
+            if (!permission) {
+              settled = true;
+              clearTimeout(timeoutId);
+              status.textContent = "Notifications were blocked. Check your browser's site settings and allow notifications, then try again.";
+              btn.disabled = false;
+              return;
+            }
             OneSignal.User.addTag("unit", chosenUnit);
             localStorage.setItem("trashUnit", chosenUnit);
-            status.textContent = "You're set! You'll be notified when it's unit " + chosenUnit + "'s turn.";
+            localStorage.setItem("trashNotifyEnabled", "true");
+            settled = true;
+            clearTimeout(timeoutId);
+            showCollapsedView(chosenUnit);
           } catch (e) {
-            status.textContent = "Couldn't enable notifications. Make sure you allowed the permission prompt.";
-          } finally {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timeoutId);
+            status.textContent = "Couldn't enable notifications: " + (e && e.message ? e.message : "unknown error") + ". Try reloading the page.";
             btn.disabled = false;
           }
         });
