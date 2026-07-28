@@ -1,0 +1,59 @@
+name: Send weekly trash reminder
+
+on:
+  schedule:
+    # Runs every Monday at 8:00 AM Pacific Time (15:00 UTC during PDT)
+    - cron: '0 15 * * 1'
+  workflow_dispatch: {} # allows manually triggering a test run from the Actions tab
+
+jobs:
+  send-notification:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Compute today's unit and send notification
+        env:
+          ONESIGNAL_APP_ID: "69ae2d70-cbf3-4d20-9ddc-36471cfb8aa6"
+          ONESIGNAL_REST_API_KEY: ${{ secrets.ONESIGNAL_REST_API_KEY }}
+        run: |
+          python3 << 'EOF'
+          import os
+          import json
+          import urllib.request
+          from datetime import date, timedelta
+
+          base = date(2026, 7, 6)  # Monday, July 6, 2026 is 73
+          rotation = ["73", "71", "73A", "71A"]
+
+          today = date.today()
+          diff_days = (today - base).days
+          diff_weeks = diff_days // 7
+          idx = diff_weeks % 4
+          unit = rotation[idx]
+
+          payload = {
+              "app_id": os.environ["ONESIGNAL_APP_ID"],
+              "target_channel": "push",
+              "filters": [
+                  {"field": "tag", "key": "unit", "relation": "=", "value": unit}
+              ],
+              "headings": {"en": "Trash Day Reminder"},
+              "contents": {"en": f"Today is trash day for unit {unit}. Time to take out your bins!"},
+          }
+
+          req = urllib.request.Request(
+              "https://api.onesignal.com/notifications",
+              data=json.dumps(payload).encode("utf-8"),
+              headers={
+                  "Content-Type": "application/json; charset=utf-8",
+                  "Authorization": f"Key {os.environ['ONESIGNAL_REST_API_KEY']}",
+              },
+              method="POST",
+          )
+          try:
+              with urllib.request.urlopen(req) as resp:
+                  print(resp.status, resp.read().decode())
+          except urllib.error.HTTPError as e:
+              print("HTTP Error:", e.code)
+              print(e.read().decode())
+              raise
+          EOF
