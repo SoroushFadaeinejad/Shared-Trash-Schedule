@@ -21,11 +21,13 @@
   <!-- OneSignal Push Notifications -->
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <script>
+    window.oneSignalReady = null;
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(async function(OneSignal) {
       await OneSignal.init({
         appId: "69ae2d70-cbf3-4d20-9ddc-36471cfb8aa6",
       });
+      window.oneSignalReady = OneSignal;
     });
   </script>
 
@@ -490,13 +492,19 @@
             status.textContent = "This is taking too long — notifications might be blocked by your browser, an extension, or a slow connection. Try reloading the page, or check that ad-blockers aren't blocking onesignal.com.";
             btn.disabled = false;
           }
-        }, 10000);
+        }, 15000);
 
-        window.OneSignalDeferred = window.OneSignalDeferred || [];
-        window.OneSignalDeferred.push(async function (OneSignal) {
+        async function handleWithOneSignal(OneSignal) {
           try {
-            await OneSignal.Notifications.requestPermission();
+            alert("DEBUG 1: Got OneSignal object. oneSignalReady=" + !!window.oneSignalReady);
+            const alreadyGranted = OneSignal.Notifications.permission === true;
+            alert("DEBUG 2: alreadyGranted=" + alreadyGranted);
+            if (!alreadyGranted) {
+              await OneSignal.Notifications.requestPermission();
+              alert("DEBUG 3: requestPermission finished");
+            }
             const permission = OneSignal.Notifications.permission;
+            alert("DEBUG 4: permission=" + permission + " settled=" + settled);
             if (settled) return;
             if (!permission) {
               settled = true;
@@ -505,20 +513,32 @@
               btn.disabled = false;
               return;
             }
+            alert("DEBUG 5: about to addTag with unit=" + chosenUnit);
             OneSignal.User.addTag("unit", chosenUnit);
+            alert("DEBUG 6: addTag called successfully");
             localStorage.setItem("trashUnit", chosenUnit);
             localStorage.setItem("trashNotifyEnabled", "true");
             settled = true;
             clearTimeout(timeoutId);
             showCollapsedView(chosenUnit);
           } catch (e) {
+            alert("DEBUG ERROR: " + (e && e.message ? e.message : JSON.stringify(e)));
             if (settled) return;
             settled = true;
             clearTimeout(timeoutId);
             status.textContent = "Couldn't enable notifications: " + (e && e.message ? e.message : "unknown error") + ". Try reloading the page.";
             btn.disabled = false;
           }
-        });
+        }
+
+        if (window.oneSignalReady) {
+          // Already initialized from a previous click/load — use it directly, no re-queuing
+          handleWithOneSignal(window.oneSignalReady);
+        } else {
+          // First time — wait for the SDK to finish loading via the deferred queue
+          window.OneSignalDeferred = window.OneSignalDeferred || [];
+          window.OneSignalDeferred.push(handleWithOneSignal);
+        }
       });
     }
     setupNotifications();
