@@ -24,7 +24,7 @@
       background-color: #f3f4f6;
       margin: 0;
       padding: 20px;
-      padding-top: 120px;
+      padding-top: 70px;
       color: #1f2937;
     }
     .card {
@@ -112,8 +112,8 @@
 
   <div class="card">
     <div class="selector">
-      <select id="year-select" onchange="renderSchedule()"></select>
-      <select id="month-select" onchange="renderSchedule()"></select>
+      <select id="year-select"></select>
+      <select id="month-select"></select>
     </div>
     <ul id="schedule-list"></ul>
   </div>
@@ -131,9 +131,42 @@
       return rotation[index];
     }
 
+    function getLastMondayOfMonth(year, month) {
+      // Start from the first day of the next month, then step back to the last Monday
+      let d = new Date(year, month + 1, 0); // last calendar day of the month
+      while (d.getDay() !== 1) {
+        d.setDate(d.getDate() - 1);
+      }
+      return d;
+    }
+
+    function isMonthFullyPassed(year, month, today) {
+      const lastMonday = getLastMondayOfMonth(year, month);
+      // Compare date-only (ignore time of day)
+      const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      return todayDateOnly > lastMonday;
+    }
+
+    let hiddenYear = null;
+    let hiddenMonth = null;
+
+    function populateMonthOptions(selectedYear, monthToSelect) {
+      const monthSelect = document.getElementById("month-select");
+      monthSelect.innerHTML = "";
+      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      months.forEach((m, idx) => {
+        // Skip the month that's fully passed, only within the year it applies to
+        if (hiddenYear === selectedYear && hiddenMonth === idx) return;
+        const opt = document.createElement("option");
+        opt.value = idx;
+        opt.textContent = m;
+        if (idx === monthToSelect) opt.selected = true;
+        monthSelect.appendChild(opt);
+      });
+    }
+
     function init() {
       const yearSelect = document.getElementById("year-select");
-      const monthSelect = document.getElementById("month-select");
       const today = new Date();
 
       // Populate Years: current year through 10 years ahead
@@ -147,15 +180,35 @@
         yearSelect.appendChild(opt);
       }
 
-      // Populate Months
-      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-      months.forEach((m, idx) => {
+      // Determine default month/year, skipping the current month if all its Mondays have passed
+      let defaultYear = today.getFullYear();
+      let defaultMonth = today.getMonth();
+      if (isMonthFullyPassed(defaultYear, defaultMonth, today)) {
+        hiddenYear = defaultYear;
+        hiddenMonth = defaultMonth;
+        defaultMonth++;
+        if (defaultMonth > 11) {
+          defaultMonth = 0;
+          defaultYear++;
+        }
+      }
+
+      // If the default rolled into a year not yet in the dropdown, add it
+      if (![...yearSelect.options].some(o => parseInt(o.value) === defaultYear)) {
         const opt = document.createElement("option");
-        opt.value = idx;
-        opt.textContent = m;
-        if (idx === today.getMonth()) opt.selected = true;
-        monthSelect.appendChild(opt);
-      });
+        opt.value = defaultYear;
+        opt.textContent = defaultYear;
+        yearSelect.appendChild(opt);
+      }
+      yearSelect.value = defaultYear;
+
+      populateMonthOptions(defaultYear, defaultMonth);
+
+      yearSelect.onchange = () => {
+        populateMonthOptions(parseInt(yearSelect.value), null);
+        renderSchedule();
+      };
+      document.getElementById("month-select").onchange = renderSchedule;
 
       // Find next Monday for current duty
       let nextMon = new Date(today);
