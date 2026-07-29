@@ -22,19 +22,6 @@
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 
-  <!-- OneSignal Push Notifications -->
-  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-  <script>
-    window.oneSignalReady = null;
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(async function(OneSignal) {
-      await OneSignal.init({
-        appId: "69ae2d70-cbf3-4d20-9ddc-36471cfb8aa6",
-      });
-      window.oneSignalReady = OneSignal;
-    });
-  </script>
-
   <style>
     :root {
       --bg: #F5F4F0;
@@ -178,58 +165,6 @@
       color: var(--brass-dark);
       letter-spacing: 0.02em;
     }
-    .notify-btn {
-      width: 100%;
-      padding: 12px;
-      border-radius: 4px;
-      border: 1px solid var(--ink);
-      background: var(--ink);
-      color: var(--bg);
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 14px;
-      font-weight: 600;
-      letter-spacing: 0.01em;
-      cursor: pointer;
-      margin-top: 8px;
-      transition: opacity 0.15s ease;
-    }
-    .notify-btn:hover:not(:disabled) { opacity: 0.85; }
-    .notify-btn:disabled {
-      background: var(--muted);
-      border-color: var(--muted);
-      cursor: default;
-    }
-    .notify-status {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 10px;
-      line-height: 1.5;
-    }
-    .notify-collapsed {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 13px;
-      color: var(--ink-soft);
-    }
-    .notify-change-btn {
-      background: none;
-      border: none;
-      color: var(--brass-dark);
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 12px;
-      font-weight: 500;
-      cursor: pointer;
-      padding: 4px 6px;
-    }
-    .notify-collapsed-actions {
-      display: flex;
-      gap: 2px;
-      flex-shrink: 0;
-    }
-    .notify-off-btn {
-      color: var(--danger);
-    }
     .install-banner {
       position: fixed;
       top: calc(12px + env(safe-area-inset-top, 0px));
@@ -307,7 +242,7 @@
     </div>
     <div class="install-banner-text">
       <strong id="install-banner-title">Add to Home Screen</strong>
-      <span id="install-banner-desc">Get the app icon and notifications by adding this to your Home Screen.</span>
+      <span id="install-banner-desc">Get the app icon on your Home Screen.</span>
     </div>
     <div class="install-banner-actions">
       <button class="install-banner-btn" id="install-banner-action">Add</button>
@@ -340,33 +275,6 @@
       <select id="month-select"></select>
     </div>
     <ul id="schedule-list"></ul>
-  </div>
-
-  <div class="card" id="notify-card">
-    <div id="notify-off-view" style="display: none;">
-      <div class="highlight-label" style="margin-bottom: 10px;">Notifications Are Off</div>
-      <button class="notify-btn" id="notify-turn-on-btn">Enable Notifications</button>
-    </div>
-    <div id="notify-setup-view">
-      <div class="highlight-label" style="margin-bottom: 10px;">Get Notified For Your Unit</div>
-      <div class="selector">
-        <select id="notify-unit-select">
-          <option value="71">71</option>
-          <option value="73">73</option>
-          <option value="71A">71A</option>
-          <option value="73A">73A</option>
-        </select>
-      </div>
-      <button class="notify-btn" id="notify-btn">Enable Notifications</button>
-      <div class="notify-status" id="notify-status">Choose your unit, then tap enable. On iPhone, add this site to your Home Screen first for notifications to work.</div>
-    </div>
-    <div id="notify-collapsed-view" class="notify-collapsed" style="display: none;">
-      <span>🔔 Notified for unit <strong id="notify-collapsed-unit" class="unit-tag" style="font-weight: 700;"></strong></span>
-      <div class="notify-collapsed-actions">
-        <button id="notify-change-btn" class="notify-change-btn">Change</button>
-        <button id="notify-off-btn" class="notify-change-btn notify-off-btn">Turn Off</button>
-      </div>
-    </div>
   </div>
 
   <script>
@@ -515,7 +423,7 @@
 
       if (isIOS) {
         title.textContent = "Add to Home Screen";
-        desc.textContent = "Tap the Share icon below, then \"Add to Home Screen\" — this is required for notifications to work on iPhone.";
+        desc.textContent = "Tap the Share icon below, then \"Add to Home Screen\".";
         actionBtn.textContent = "Got it";
         actionBtn.addEventListener("click", () => {
           banner.style.display = "none";
@@ -543,142 +451,6 @@
       }
     }
     setupInstallBanner();
-
-    // --- Notification setup ---
-    function showCollapsedView(unit) {
-      document.getElementById("notify-off-view").style.display = "none";
-      document.getElementById("notify-setup-view").style.display = "none";
-      document.getElementById("notify-collapsed-view").style.display = "flex";
-      document.getElementById("notify-collapsed-unit").textContent = unit;
-    }
-
-    function showSetupView() {
-      document.getElementById("notify-off-view").style.display = "none";
-      document.getElementById("notify-setup-view").style.display = "block";
-      document.getElementById("notify-collapsed-view").style.display = "none";
-    }
-
-    function showOffView() {
-      document.getElementById("notify-off-view").style.display = "block";
-      document.getElementById("notify-setup-view").style.display = "none";
-      document.getElementById("notify-collapsed-view").style.display = "none";
-    }
-
-    function setupNotifications() {
-      const btn = document.getElementById("notify-btn");
-      const status = document.getElementById("notify-status");
-      const unitSelect = document.getElementById("notify-unit-select");
-      const changeBtn = document.getElementById("notify-change-btn");
-      const offBtn = document.getElementById("notify-off-btn");
-      const turnOnBtn = document.getElementById("notify-turn-on-btn");
-
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-      const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
-
-      if (isIOS && !isStandalone) {
-        status.textContent = "On iPhone/iPad, you must add this site to your Home Screen first (Share icon → Add to Home Screen), then open it from the Home Screen icon before notifications will work.";
-        btn.textContent = "Add to Home Screen First";
-        btn.disabled = true;
-      }
-
-      const savedUnit = localStorage.getItem("trashUnit");
-      const notifyEnabled = localStorage.getItem("trashNotifyEnabled") === "true";
-      const explicitlyOff = localStorage.getItem("trashNotifyEnabled") === "false";
-
-      if (savedUnit) {
-        unitSelect.value = savedUnit;
-      }
-
-      if (savedUnit && notifyEnabled) {
-        showCollapsedView(savedUnit);
-      } else if (explicitlyOff) {
-        showOffView();
-      }
-
-      changeBtn.addEventListener("click", () => showSetupView());
-      turnOnBtn.addEventListener("click", () => showSetupView());
-
-      offBtn.addEventListener("click", () => {
-        offBtn.disabled = true;
-        offBtn.textContent = "Turning off...";
-        window.OneSignalDeferred = window.OneSignalDeferred || [];
-        const doOptOut = (OneSignal) => {
-          try {
-            OneSignal.User.removeTag("unit");
-            if (OneSignal.User.PushSubscription && OneSignal.User.PushSubscription.optOut) {
-              OneSignal.User.PushSubscription.optOut();
-            }
-          } catch (e) {}
-          localStorage.setItem("trashNotifyEnabled", "false");
-          offBtn.disabled = false;
-          offBtn.textContent = "Turn Off";
-          showOffView();
-        };
-        if (window.oneSignalReady) {
-          doOptOut(window.oneSignalReady);
-        } else {
-          window.OneSignalDeferred.push(doOptOut);
-        }
-      });
-
-      btn.addEventListener("click", async () => {
-        const chosenUnit = unitSelect.value;
-        btn.disabled = true;
-        status.textContent = "Setting up...";
-
-        let settled = false;
-        const timeoutId = setTimeout(() => {
-          if (!settled) {
-            settled = true;
-            status.textContent = "This is taking too long — notifications might be blocked by your browser, an extension, or a slow connection. Try reloading the page, or check that ad-blockers aren't blocking onesignal.com.";
-            btn.disabled = false;
-          }
-        }, 15000);
-
-        async function handleWithOneSignal(OneSignal) {
-          try {
-            const alreadyGranted = OneSignal.Notifications.permission === true;
-            if (!alreadyGranted) {
-              await OneSignal.Notifications.requestPermission();
-            }
-            const permission = OneSignal.Notifications.permission;
-            if (settled) return;
-            if (!permission) {
-              settled = true;
-              clearTimeout(timeoutId);
-              status.textContent = "Notifications were blocked. Check your browser's site settings and allow notifications, then try again.";
-              btn.disabled = false;
-              return;
-            }
-            if (OneSignal.User.PushSubscription && OneSignal.User.PushSubscription.optIn) {
-              OneSignal.User.PushSubscription.optIn();
-            }
-            OneSignal.User.addTag("unit", chosenUnit);
-            localStorage.setItem("trashUnit", chosenUnit);
-            localStorage.setItem("trashNotifyEnabled", "true");
-            settled = true;
-            clearTimeout(timeoutId);
-            btn.disabled = false;
-            status.textContent = "";
-            showCollapsedView(chosenUnit);
-          } catch (e) {
-            if (settled) return;
-            settled = true;
-            clearTimeout(timeoutId);
-            status.textContent = "Couldn't enable notifications: " + (e && e.message ? e.message : "unknown error") + ". Try reloading the page.";
-            btn.disabled = false;
-          }
-        }
-
-        if (window.oneSignalReady) {
-          handleWithOneSignal(window.oneSignalReady);
-        } else {
-          window.OneSignalDeferred = window.OneSignalDeferred || [];
-          window.OneSignalDeferred.push(handleWithOneSignal);
-        }
-      });
-    }
-    setupNotifications();
   </script>
 </body>
 </html>
