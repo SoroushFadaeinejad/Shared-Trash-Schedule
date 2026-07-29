@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -148,6 +147,14 @@
       cursor: pointer;
       padding: 4px 8px;
     }
+    .notify-collapsed-actions {
+      display: flex;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    .notify-off-btn {
+      color: #dc2626;
+    }
     .install-banner {
       position: fixed;
       top: 12px;
@@ -253,7 +260,10 @@
     </div>
     <div id="notify-collapsed-view" class="notify-collapsed" style="display: none;">
       <span>🔔 Notified for unit <strong id="notify-collapsed-unit"></strong></span>
-      <button id="notify-change-btn" class="notify-change-btn">Change</button>
+      <div class="notify-collapsed-actions">
+        <button id="notify-change-btn" class="notify-change-btn">Change</button>
+        <button id="notify-off-btn" class="notify-change-btn notify-off-btn">Turn Off</button>
+      </div>
     </div>
   </div>
 
@@ -455,6 +465,7 @@
       const status = document.getElementById("notify-status");
       const unitSelect = document.getElementById("notify-unit-select");
       const changeBtn = document.getElementById("notify-change-btn");
+      const offBtn = document.getElementById("notify-off-btn");
 
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
       const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
@@ -480,6 +491,32 @@
         showSetupView();
       });
 
+      offBtn.addEventListener("click", () => {
+        offBtn.disabled = true;
+        offBtn.textContent = "Turning off...";
+        window.OneSignalDeferred = window.OneSignalDeferred || [];
+        const doOptOut = (OneSignal) => {
+          try {
+            OneSignal.User.removeTag("unit");
+            if (OneSignal.User.PushSubscription && OneSignal.User.PushSubscription.optOut) {
+              OneSignal.User.PushSubscription.optOut();
+            }
+          } catch (e) {
+            // even if this fails, we still clear local state below so the UI reflects "off"
+          }
+          localStorage.setItem("trashNotifyEnabled", "false");
+          offBtn.disabled = false;
+          offBtn.textContent = "Turn Off";
+          status.textContent = "Notifications turned off. Choose your unit, then tap enable to turn them back on.";
+          showSetupView();
+        };
+        if (window.oneSignalReady) {
+          doOptOut(window.oneSignalReady);
+        } else {
+          window.OneSignalDeferred.push(doOptOut);
+        }
+      });
+
       btn.addEventListener("click", async () => {
         const chosenUnit = unitSelect.value;
         btn.disabled = true;
@@ -496,15 +533,11 @@
 
         async function handleWithOneSignal(OneSignal) {
           try {
-            alert("DEBUG 1: Got OneSignal object. oneSignalReady=" + !!window.oneSignalReady);
             const alreadyGranted = OneSignal.Notifications.permission === true;
-            alert("DEBUG 2: alreadyGranted=" + alreadyGranted);
             if (!alreadyGranted) {
               await OneSignal.Notifications.requestPermission();
-              alert("DEBUG 3: requestPermission finished");
             }
             const permission = OneSignal.Notifications.permission;
-            alert("DEBUG 4: permission=" + permission + " settled=" + settled);
             if (settled) return;
             if (!permission) {
               settled = true;
@@ -513,16 +546,18 @@
               btn.disabled = false;
               return;
             }
-            alert("DEBUG 5: about to addTag with unit=" + chosenUnit);
+            if (OneSignal.User.PushSubscription && OneSignal.User.PushSubscription.optIn) {
+              OneSignal.User.PushSubscription.optIn();
+            }
             OneSignal.User.addTag("unit", chosenUnit);
-            alert("DEBUG 6: addTag called successfully");
             localStorage.setItem("trashUnit", chosenUnit);
             localStorage.setItem("trashNotifyEnabled", "true");
             settled = true;
             clearTimeout(timeoutId);
+            btn.disabled = false;
+            status.textContent = "";
             showCollapsedView(chosenUnit);
           } catch (e) {
-            alert("DEBUG ERROR: " + (e && e.message ? e.message : JSON.stringify(e)));
             if (settled) return;
             settled = true;
             clearTimeout(timeoutId);
