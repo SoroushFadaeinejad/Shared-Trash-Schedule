@@ -7,7 +7,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Trash Schedule">
-  <meta name="theme-color" content="#2563eb">
+  <meta name="theme-color" content="#1A2233">
+
+  <!-- Fonts: Fraunces (display), Inter (UI), IBM Plex Mono (data/dates) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 
   <!-- Web App Manifest (enables "Add to Home Screen" on Android/Chrome) -->
   <link rel="manifest" href="manifest.json">
@@ -31,61 +36,120 @@
   </script>
 
   <style>
+    :root {
+      --bg: #F5F4F0;
+      --surface: #FFFFFF;
+      --ink: #1A2233;
+      --ink-soft: #4B5468;
+      --muted: #7A8194;
+      --brass: #A9824C;
+      --brass-dark: #8A6B3D;
+      --line: #DEDACD;
+      --danger: #A6472A;
+    }
+    * { box-sizing: border-box; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: #f3f4f6;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
       margin: 0;
       padding: 20px;
-      padding-top: 70px;
-      color: #1f2937;
+      padding-top: 64px;
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
     }
     .card {
-      background: white;
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 28px 24px;
       max-width: 400px;
-      margin: 0 auto 20px auto;
+      margin: 0 auto 16px auto;
       text-align: center;
     }
-    .header-icon {
-      font-size: 48px;
-      margin-bottom: 8px;
+    .brand {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 22px;
+    }
+    .brand-icon {
+      font-size: 26px;
+      margin-bottom: 6px;
+      opacity: 0.85;
+    }
+    .brand-eyebrow {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--brass-dark);
+      margin-bottom: 2px;
     }
     h1 {
-      font-size: 20px;
-      margin: 0 0 16px 0;
-      color: #1e3a8a;
+      font-family: 'Fraunces', Georgia, serif;
+      font-weight: 500;
+      font-size: 22px;
+      margin: 0;
+      color: var(--ink);
+      letter-spacing: -0.01em;
     }
     .highlight-label {
-      font-size: 14px;
-      color: #6b7280;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.14em;
+      margin-bottom: 6px;
+    }
+    /* Plaque: the signature element — current duty rendered like an engraved unit sign */
+    .plaque {
+      border: 1px solid var(--brass);
+      border-radius: 3px;
+      padding: 18px 16px 20px 16px;
+      background: linear-gradient(180deg, rgba(169,130,76,0.06), rgba(169,130,76,0.02));
+      position: relative;
+    }
+    .plaque::before,
+    .plaque::after {
+      content: "";
+      position: absolute;
+      top: 6px;
+      bottom: 6px;
+      width: 1px;
+      background: var(--line);
+    }
+    .plaque::before { left: 6px; }
+    .plaque::after { right: 6px; }
+    .highlight-date {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--ink-soft);
+      margin-bottom: 6px;
     }
     .highlight-unit {
-      font-size: 36px;
-      font-weight: bold;
-      color: #2563eb;
-      margin: 4px 0 16px 0;
-    }
-    .highlight-date {
-      font-size: 16px;
+      font-family: 'Fraunces', Georgia, serif;
+      font-variation-settings: 'opsz' 144;
+      font-size: 52px;
       font-weight: 600;
-      color: #374151;
+      color: var(--ink);
+      line-height: 1;
+      letter-spacing: -0.01em;
     }
     .selector {
       display: flex;
       justify-content: center;
       gap: 10px;
-      margin-bottom: 16px;
+      margin-bottom: 18px;
     }
     select {
-      padding: 8px 12px;
-      border-radius: 8px;
-      border: 1px solid #d1d5db;
-      font-size: 16px;
-      background: white;
+      padding: 9px 12px;
+      border-radius: 3px;
+      border: 1px solid var(--line);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 14px;
+      background: var(--surface);
+      color: var(--ink);
     }
     ul {
       list-style: none;
@@ -94,66 +158,75 @@
       text-align: left;
     }
     li {
-      padding: 12px 16px;
-      border-bottom: 1px solid #f3f4f6;
+      padding: 12px 4px;
+      border-bottom: 1px solid var(--line);
       display: flex;
       justify-content: space-between;
       align-items: center;
+      font-size: 14px;
+      color: var(--ink-soft);
     }
     li:last-child {
       border-bottom: none;
     }
     .unit-tag {
-      font-weight: bold;
-      padding: 4px 10px;
-      border-radius: 20px;
-      background: #eff6ff;
-      color: #1d4ed8;
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 500;
+      font-size: 13px;
+      color: var(--brass-dark);
+      letter-spacing: 0.02em;
     }
     .notify-btn {
       width: 100%;
       padding: 12px;
-      border-radius: 10px;
-      border: none;
-      background: #2563eb;
-      color: white;
-      font-size: 16px;
+      border-radius: 3px;
+      border: 1px solid var(--ink);
+      background: var(--ink);
+      color: var(--bg);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
       font-weight: 600;
+      letter-spacing: 0.01em;
       cursor: pointer;
-      margin-top: 12px;
+      margin-top: 8px;
+      transition: opacity 0.15s ease;
     }
+    .notify-btn:hover:not(:disabled) { opacity: 0.85; }
     .notify-btn:disabled {
-      background: #9ca3af;
+      background: var(--muted);
+      border-color: var(--muted);
       cursor: default;
     }
     .notify-status {
-      font-size: 13px;
-      color: #6b7280;
+      font-size: 12px;
+      color: var(--muted);
       margin-top: 10px;
+      line-height: 1.5;
     }
     .notify-collapsed {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-size: 14px;
-      color: #374151;
+      font-size: 13px;
+      color: var(--ink-soft);
     }
     .notify-change-btn {
       background: none;
       border: none;
-      color: #2563eb;
-      font-size: 13px;
-      font-weight: 600;
+      color: var(--brass-dark);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      font-weight: 500;
       cursor: pointer;
-      padding: 4px 8px;
+      padding: 4px 6px;
     }
     .notify-collapsed-actions {
       display: flex;
-      gap: 4px;
+      gap: 2px;
       flex-shrink: 0;
     }
     .notify-off-btn {
-      color: #dc2626;
+      color: var(--danger);
     }
     .install-banner {
       position: fixed;
@@ -162,9 +235,10 @@
       right: 12px;
       max-width: 400px;
       margin: 0 auto;
-      background: white;
-      border-radius: 14px;
-      box-shadow: 0 6px 16px -2px rgba(0, 0, 0, 0.15);
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      box-shadow: 0 8px 20px -4px rgba(26,34,51,0.12);
       padding: 14px 16px;
       display: none;
       align-items: center;
@@ -172,19 +246,22 @@
       z-index: 1000;
     }
     .install-banner-icon {
-      font-size: 28px;
+      font-size: 24px;
       flex-shrink: 0;
+      opacity: 0.85;
     }
     .install-banner-text {
       flex: 1;
       font-size: 13px;
-      color: #374151;
+      color: var(--ink-soft);
       line-height: 1.4;
     }
     .install-banner-text strong {
       display: block;
+      font-family: 'Fraunces', Georgia, serif;
+      font-weight: 500;
       font-size: 14px;
-      color: #1f2937;
+      color: var(--ink);
       margin-bottom: 2px;
     }
     .install-banner-actions {
@@ -194,10 +271,10 @@
       flex-shrink: 0;
     }
     .install-banner-btn {
-      background: #2563eb;
-      color: white;
+      background: var(--ink);
+      color: var(--bg);
       border: none;
-      border-radius: 8px;
+      border-radius: 3px;
       padding: 6px 12px;
       font-size: 13px;
       font-weight: 600;
@@ -207,7 +284,7 @@
     .install-banner-dismiss {
       background: none;
       border: none;
-      color: #9ca3af;
+      color: var(--muted);
       font-size: 12px;
       cursor: pointer;
       padding: 2px;
@@ -245,6 +322,10 @@
   </div>
 
   <div class="card" id="notify-card">
+    <div id="notify-off-view" style="display: none;">
+      <div class="highlight-label" style="margin-bottom: 10px;">Notifications Are Off</div>
+      <button class="notify-btn" id="notify-turn-on-btn">Enable Notifications</button>
+    </div>
     <div id="notify-setup-view">
       <div class="highlight-label" style="margin-bottom: 10px;">Get Notified For Your Unit</div>
       <div class="selector">
@@ -450,13 +531,21 @@
 
     // --- Notification setup ---
     function showCollapsedView(unit) {
+      document.getElementById("notify-off-view").style.display = "none";
       document.getElementById("notify-setup-view").style.display = "none";
       document.getElementById("notify-collapsed-view").style.display = "flex";
       document.getElementById("notify-collapsed-unit").textContent = unit;
     }
 
     function showSetupView() {
+      document.getElementById("notify-off-view").style.display = "none";
       document.getElementById("notify-setup-view").style.display = "block";
+      document.getElementById("notify-collapsed-view").style.display = "none";
+    }
+
+    function showOffView() {
+      document.getElementById("notify-off-view").style.display = "block";
+      document.getElementById("notify-setup-view").style.display = "none";
       document.getElementById("notify-collapsed-view").style.display = "none";
     }
 
@@ -466,6 +555,7 @@
       const unitSelect = document.getElementById("notify-unit-select");
       const changeBtn = document.getElementById("notify-change-btn");
       const offBtn = document.getElementById("notify-off-btn");
+      const turnOnBtn = document.getElementById("notify-turn-on-btn");
 
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
       const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
@@ -478,6 +568,7 @@
 
       const savedUnit = localStorage.getItem("trashUnit");
       const notifyEnabled = localStorage.getItem("trashNotifyEnabled") === "true";
+      const explicitlyOff = localStorage.getItem("trashNotifyEnabled") === "false";
 
       if (savedUnit) {
         unitSelect.value = savedUnit;
@@ -485,9 +576,15 @@
 
       if (savedUnit && notifyEnabled) {
         showCollapsedView(savedUnit);
+      } else if (explicitlyOff) {
+        showOffView();
       }
 
       changeBtn.addEventListener("click", () => {
+        showSetupView();
+      });
+
+      turnOnBtn.addEventListener("click", () => {
         showSetupView();
       });
 
@@ -507,8 +604,7 @@
           localStorage.setItem("trashNotifyEnabled", "false");
           offBtn.disabled = false;
           offBtn.textContent = "Turn Off";
-          status.textContent = "Notifications turned off. Choose your unit, then tap enable to turn them back on.";
-          showSetupView();
+          showOffView();
         };
         if (window.oneSignalReady) {
           doOptOut(window.oneSignalReady);
