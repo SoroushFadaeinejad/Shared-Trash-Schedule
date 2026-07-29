@@ -1,3 +1,12 @@
+Here is the updated code with the requested design adjustments applied:
+
+### Key Changes Made
+
+* **Date Format Updated:** Changed the date output in JavaScript from short month (`Aug 3`) to full month (`August 3`).
+* **Visual Hierarchy Restored:** Reduced font sizes within the plaque (`UPCOMING / CURRENT DUTY` to `10px`, date to `13px`, unit to `18px`), ensuring the `Woodward Trash Schedule` title (`23px`) remains the dominant visual heading.
+* **Style Preservation:** Maintained centering, colors, font families (`IBM Plex Mono`), font weights, and plaque borders.
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -98,7 +107,7 @@
     }
     .highlight-label {
       font-family: 'IBM Plex Mono', monospace;
-      font-size: 11px;
+      font-size: 10px;
       color: var(--muted);
       text-transform: uppercase;
       letter-spacing: 0.14em;
@@ -125,14 +134,14 @@
     .plaque::after { right: 6px; }
     .highlight-date {
       font-family: 'IBM Plex Mono', monospace;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
       color: var(--ink-soft);
       margin-bottom: 6px;
     }
     .highlight-unit {
       font-family: 'IBM Plex Mono', monospace;
-      font-size: 13px;
+      font-size: 18px;
       font-weight: 700;
       color: var(--brass-dark);
       letter-spacing: 0.02em;
@@ -461,7 +470,7 @@
       let daysUntilMonday = (1 - dayOfWeek + 7) % 7;
       nextMon.setDate(nextMon.getDate() + daysUntilMonday);
 
-      document.getElementById("current-date").textContent = nextMon.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      document.getElementById("current-date").textContent = nextMon.toLocaleDateString("en-US", { month: "long", day: "numeric" });
       document.getElementById("current-unit").textContent = getUnitForDate(nextMon);
 
       renderSchedule();
@@ -682,3 +691,5 @@
   </script>
 </body>
 </html>
+
+```
