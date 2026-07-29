@@ -2,15 +2,25 @@ name: Send weekly trash reminder
 
 on:
   schedule:
-    # Runs every Monday at 8:00 AM Pacific Time (15:00 UTC during PDT)
-    - cron: '0 15 * * 1'
+    # These 4 triggers cover every possible UTC time that corresponds to
+    # 12:00 PM or 4:00 PM US Pacific time, across both Daylight Saving
+    # Time (PDT, UTC-7) and Standard Time (PST, UTC-8). The Python script
+    # below checks the real Pacific local time on each run and only
+    # actually sends a notification if it's genuinely 12:00 PM or 4:00 PM
+    # Pacific — so exactly one of these 4 triggers does anything on any
+    # given Monday, and it self-corrects every year with no manual edits,
+    # since Python's zoneinfo always knows the current DST rules.
+    - cron: '0 19 * * 1'  # 12:00 PM PDT (summer)
+    - cron: '0 20 * * 1'  # 12:00 PM PST (winter)
+    - cron: '0 23 * * 1'  # 4:00 PM PDT (summer)
+    - cron: '0 0 * * 2'   # 4:00 PM PST (winter) — lands on Tuesday 00:00 UTC
   workflow_dispatch: {} # allows manually triggering a test run from the Actions tab
 
 jobs:
   send-notification:
     runs-on: ubuntu-latest
     steps:
-      - name: Compute today's unit and send notification
+      - name: Compute today's unit and send notification if it's the right Pacific time
         env:
           ONESIGNAL_APP_ID: "69ae2d70-cbf3-4d20-9ddc-36471cfb8aa6"
           ONESIGNAL_REST_API_KEY: ${{ secrets.ONESIGNAL_REST_API_KEY }}
@@ -19,12 +29,26 @@ jobs:
           import os
           import json
           import urllib.request
-          from datetime import date, timedelta
+          from datetime import date, timedelta, datetime
+          from zoneinfo import ZoneInfo
 
+          # --- Only proceed if it's actually 12:00 PM or 4:00 PM Pacific right now ---
+          # zoneinfo automatically knows the correct DST transition dates for
+          # any year (including the "first Sunday in November" rule), so this
+          # requires no manual updates, ever.
+          pacific_now = datetime.now(ZoneInfo("America/Los_Angeles"))
+          target_hours = {12, 16}
+          if pacific_now.hour not in target_hours or pacific_now.minute > 15:
+              print(f"Skipping — current Pacific time is {pacific_now.strftime('%Y-%m-%d %H:%M %Z')}, not a target send time.")
+              exit(0)
+
+          print(f"Proceeding — current Pacific time is {pacific_now.strftime('%Y-%m-%d %H:%M %Z')}.")
+
+          # --- Compute which unit is on duty this week ---
           base = date(2026, 7, 6)  # Monday, July 6, 2026 is 73
           rotation = ["73", "71", "73A", "71A"]
 
-          today = date.today()
+          today = pacific_now.date()
           diff_days = (today - base).days
           diff_weeks = diff_days // 7
           idx = diff_weeks % 4
