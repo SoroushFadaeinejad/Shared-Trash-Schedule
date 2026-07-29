@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -316,7 +317,16 @@
     </div>
   </div>
 
-  <!-- Restored Notification Subscription Card -->
+  <!-- Main Schedule Card -->
+  <div class="card">
+    <div class="selector">
+      <select id="year-select"></select>
+      <select id="month-select"></select>
+    </div>
+    <ul id="schedule-list"></ul>
+  </div>
+
+  <!-- Notification Subscription Card Moved Below Dates & Units -->
   <div class="card notify-card" id="notify-card">
     <div class="notify-title">Notifications</div>
     <p class="notify-desc" id="notify-desc">Subscribe to get reminders for latest updates and schedule changes. Disable anytime.</p>
@@ -327,14 +337,6 @@
       </svg>
       <span id="notify-btn-text">Enable Notifications</span>
     </button>
-  </div>
-
-  <div class="card">
-    <div class="selector">
-      <select id="year-select"></select>
-      <select id="month-select"></select>
-    </div>
-    <ul id="schedule-list"></ul>
   </div>
 
   <script>
@@ -457,7 +459,7 @@
       }
     }
 
-    // --- Notification Handler Logic ---
+    // --- OneSignal Notifications Setup ---
     function setupNotifications() {
       const btn = document.getElementById("notify-btn");
       const btnText = document.getElementById("notify-btn-text");
@@ -465,27 +467,39 @@
 
       window.OneSignalDeferred = window.OneSignalDeferred || [];
       OneSignalDeferred.push(async function(OneSignal) {
-        const isOptedIn = await OneSignal.User.PushSubscription.optedIn;
+        // Initialize OneSignal (replace YOUR_ONESIGNAL_APP_ID with your actual App ID)
+        await OneSignal.init({
+          appId: "YOUR_ONESIGNAL_APP_ID",
+        });
 
-        if (isOptedIn) {
-          btnText.textContent = "Disable Notifications";
-          btn.classList.add("off-btn");
-          desc.textContent = "Reminders are currently active. You can turn them off at any time.";
-        }
-
-        btn.addEventListener("click", async () => {
-          const currentlyOptedIn = await OneSignal.User.PushSubscription.optedIn;
-          if (currentlyOptedIn) {
-            await OneSignal.User.PushSubscription.optOut();
-            btnText.textContent = "Enable Notifications";
-            btn.classList.remove("off-btn");
-            desc.textContent = "Subscribe to get reminders for latest updates and schedule changes. Disable anytime.";
-          } else {
-            await OneSignal.User.PushSubscription.optIn();
+        async function updateUI() {
+          const isOptedIn = await OneSignal.User.PushSubscription.optedIn;
+          if (isOptedIn) {
             btnText.textContent = "Disable Notifications";
             btn.classList.add("off-btn");
             desc.textContent = "Reminders are currently active. You can turn them off at any time.";
+          } else {
+            btnText.textContent = "Enable Notifications";
+            btn.classList.remove("off-btn");
+            desc.textContent = "Subscribe to get reminders for latest updates and schedule changes. Disable anytime.";
           }
+        }
+
+        await updateUI();
+
+        // Listen for subscription changes
+        OneSignal.User.PushSubscription.addEventListener("change", updateUI);
+
+        btn.addEventListener("click", async () => {
+          const isOptedIn = await OneSignal.User.PushSubscription.optedIn;
+          if (isOptedIn) {
+            await OneSignal.User.PushSubscription.optOut();
+          } else {
+            // Prompts native browser/iOS dialog or turns subscription back on
+            await OneSignal.Notifications.requestPermission();
+            await OneSignal.User.PushSubscription.optIn();
+          }
+          await updateUI();
         });
       });
     }
@@ -546,3 +560,5 @@
   </script>
 </body>
 </html>
+
+```
