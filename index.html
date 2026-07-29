@@ -2,19 +2,25 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Woodward Trash Schedule</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Trash Schedule">
-  <meta name="theme-color" content="#1A2233">
+  <meta name="theme-color" content="#F5F4F0">
 
-  <!-- Fonts: Fraunces (display), Inter (UI), IBM Plex Mono (data/dates) -->
+  <!-- Open Graph Meta Tags for Rich Link Sharing -->
+  <meta property="og:title" content="Woodward Trash Schedule">
+  <meta property="og:description" content="View upcoming trash pickup duties and schedule rotations.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="apple-touch-icon.png">
+
+  <!-- Fonts: Playfair Display, Plus Jakarta Sans, IBM Plex Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- Web App Manifest (enables "Add to Home Screen" on Android/Chrome) -->
+  <!-- Web App Manifest -->
   <link rel="manifest" href="manifest.json">
 
   <!-- Home Screen Icons -->
@@ -48,48 +54,47 @@
       --danger: #A6472A;
     }
     * { box-sizing: border-box; }
+    html {
+      height: 100%;
+      background-color: var(--bg);
+      overscroll-behavior-y: none;
+    }
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background-color: var(--bg);
       margin: 0;
-      padding: 20px;
-      padding-top: 64px;
+      min-height: 100%;
+      padding: calc(20px + env(safe-area-inset-top, 0px)) 20px calc(20px + env(safe-area-inset-bottom, 0px)) 20px;
       color: var(--ink);
       -webkit-font-smoothing: antialiased;
+      overscroll-behavior-y: none;
     }
     .card {
       background: var(--surface);
       border: 1px solid var(--line);
-      border-radius: 4px;
+      border-radius: 6px;
       padding: 28px 24px;
       max-width: 400px;
       margin: 0 auto 16px auto;
       text-align: center;
-    }
-    .brand {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 22px;
+      box-shadow: 0 4px 12px rgba(26, 34, 51, 0.03);
     }
     .brand-icon {
-      font-size: 26px;
-      margin-bottom: 6px;
-      opacity: 0.85;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
-    .brand-eyebrow {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 11px;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
+    .logo-svg {
+      width: 38px;
+      height: 38px;
       color: var(--brass-dark);
-      margin-bottom: 2px;
     }
     h1 {
-      font-family: 'Fraunces', Georgia, serif;
-      font-weight: 500;
-      font-size: 22px;
-      margin: 0;
+      font-family: 'Playfair Display', Georgia, serif;
+      font-weight: 600;
+      font-size: 23px;
+      margin: 0 0 18px 0;
       color: var(--ink);
       letter-spacing: -0.01em;
     }
@@ -101,10 +106,9 @@
       letter-spacing: 0.14em;
       margin-bottom: 6px;
     }
-    /* Plaque: the signature element — current duty rendered like an engraved unit sign */
     .plaque {
       border: 1px solid var(--brass);
-      border-radius: 3px;
+      border-radius: 4px;
       padding: 18px 16px 20px 16px;
       background: linear-gradient(180deg, rgba(169,130,76,0.06), rgba(169,130,76,0.02));
       position: relative;
@@ -122,19 +126,18 @@
     .plaque::after { right: 6px; }
     .highlight-date {
       font-family: 'IBM Plex Mono', monospace;
-      font-size: 14px;
-      font-weight: 500;
+      font-size: 15px;
+      font-weight: 600;
       color: var(--ink-soft);
       margin-bottom: 6px;
     }
     .highlight-unit {
-      font-family: 'Fraunces', Georgia, serif;
-      font-variation-settings: 'opsz' 144;
-      font-size: 52px;
-      font-weight: 600;
-      color: var(--ink);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--brass-dark);
+      letter-spacing: 0.02em;
       line-height: 1;
-      letter-spacing: -0.01em;
     }
     .selector {
       display: flex;
@@ -144,7 +147,7 @@
     }
     select {
       padding: 9px 12px;
-      border-radius: 3px;
+      border-radius: 4px;
       border: 1px solid var(--line);
       font-family: 'IBM Plex Mono', monospace;
       font-size: 14px;
@@ -179,11 +182,11 @@
     .notify-btn {
       width: 100%;
       padding: 12px;
-      border-radius: 3px;
+      border-radius: 4px;
       border: 1px solid var(--ink);
       background: var(--ink);
       color: var(--bg);
-      font-family: 'Inter', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       font-size: 14px;
       font-weight: 600;
       letter-spacing: 0.01em;
@@ -230,14 +233,14 @@
     }
     .install-banner {
       position: fixed;
-      top: 12px;
+      top: calc(12px + env(safe-area-inset-top, 0px));
       left: 12px;
       right: 12px;
       max-width: 400px;
       margin: 0 auto;
       background: var(--surface);
       border: 1px solid var(--line);
-      border-radius: 4px;
+      border-radius: 6px;
       box-shadow: 0 8px 20px -4px rgba(26,34,51,0.12);
       padding: 14px 16px;
       display: none;
@@ -246,9 +249,9 @@
       z-index: 1000;
     }
     .install-banner-icon {
-      font-size: 24px;
       flex-shrink: 0;
-      opacity: 0.85;
+      display: flex;
+      align-items: center;
     }
     .install-banner-text {
       flex: 1;
@@ -258,8 +261,8 @@
     }
     .install-banner-text strong {
       display: block;
-      font-family: 'Fraunces', Georgia, serif;
-      font-weight: 500;
+      font-family: 'Playfair Display', Georgia, serif;
+      font-weight: 600;
       font-size: 14px;
       color: var(--ink);
       margin-bottom: 2px;
@@ -294,7 +297,15 @@
 <body>
 
   <div class="install-banner" id="install-banner">
-    <div class="install-banner-icon">🗑️</div>
+    <div class="install-banner-icon">
+      <svg class="logo-svg" style="width: 28px; height: 28px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 6h18"></path>
+        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+        <line x1="10" y1="11" x2="10" y2="17"></line>
+        <line x1="14" y1="11" x2="14" y2="17"></line>
+      </svg>
+    </div>
     <div class="install-banner-text">
       <strong id="install-banner-title">Add to Home Screen</strong>
       <span id="install-banner-desc">Get the app icon and notifications by adding this to your Home Screen.</span>
@@ -306,11 +317,21 @@
   </div>
 
   <div class="card">
-    <div class="header-icon">🗑️</div>
+    <div class="brand-icon">
+      <svg class="logo-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 6h18" stroke="var(--ink)"></path>
+        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" stroke="var(--ink)"></path>
+        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" stroke="var(--ink)"></path>
+        <line x1="10" y1="11" x2="10" y2="17" stroke="var(--brass)"></line>
+        <line x1="14" y1="11" x2="14" y2="17" stroke="var(--brass)"></line>
+      </svg>
+    </div>
     <h1>Woodward Trash Schedule</h1>
-    <div class="highlight-label">Upcoming / Current Duty</div>
-    <div class="highlight-date" id="current-date">Loading...</div>
-    <div class="highlight-unit" id="current-unit">--</div>
+    <div class="plaque">
+      <div class="highlight-label">Upcoming / Current Duty</div>
+      <div class="highlight-date" id="current-date">Loading...</div>
+      <div class="highlight-unit" id="current-unit">--</div>
+    </div>
   </div>
 
   <div class="card">
@@ -362,8 +383,7 @@
     }
 
     function getLastMondayOfMonth(year, month) {
-      // Start from the first day of the next month, then step back to the last Monday
-      let d = new Date(year, month + 1, 0); // last calendar day of the month
+      let d = new Date(year, month + 1, 0);
       while (d.getDay() !== 1) {
         d.setDate(d.getDate() - 1);
       }
@@ -372,7 +392,6 @@
 
     function isMonthFullyPassed(year, month, today) {
       const lastMonday = getLastMondayOfMonth(year, month);
-      // Compare date-only (ignore time of day)
       const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
       return todayDateOnly > lastMonday;
     }
@@ -385,7 +404,6 @@
       monthSelect.innerHTML = "";
       const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
       months.forEach((m, idx) => {
-        // Skip the month that's fully passed, only within the year it applies to
         if (hiddenYear === selectedYear && hiddenMonth === idx) return;
         const opt = document.createElement("option");
         opt.value = idx;
@@ -399,7 +417,6 @@
       const yearSelect = document.getElementById("year-select");
       const today = new Date();
 
-      // Populate Years: current year through 10 years ahead
       const startYear = today.getFullYear();
       const endYear = startYear + 10;
       for (let y = startYear; y <= endYear; y++) {
@@ -410,7 +427,6 @@
         yearSelect.appendChild(opt);
       }
 
-      // Determine default month/year, skipping the current month if all its Mondays have passed
       let defaultYear = today.getFullYear();
       let defaultMonth = today.getMonth();
       if (isMonthFullyPassed(defaultYear, defaultMonth, today)) {
@@ -423,7 +439,6 @@
         }
       }
 
-      // If the default rolled into a year not yet in the dropdown, add it
       if (![...yearSelect.options].some(o => parseInt(o.value) === defaultYear)) {
         const opt = document.createElement("option");
         opt.value = defaultYear;
@@ -440,10 +455,12 @@
       };
       document.getElementById("month-select").onchange = renderSchedule;
 
-      // Find next Monday for current duty
-      let nextMon = new Date(today);
-      nextMon.setDate(today.getDate() + ((1 - today.getDay() + 7) % 7));
-      document.getElementById("current-date").textContent = nextMon.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+      let nextMon = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      let dayOfWeek = nextMon.getDay();
+      let daysUntilMonday = (1 - dayOfWeek + 7) % 7;
+      nextMon.setDate(nextMon.getDate() + daysUntilMonday);
+
+      document.getElementById("current-date").textContent = nextMon.toLocaleDateString("en-US", { month: "long", day: "numeric" });
       document.getElementById("current-unit").textContent = getUnitForDate(nextMon);
 
       renderSchedule();
@@ -455,7 +472,6 @@
       const list = document.getElementById("schedule-list");
       list.innerHTML = "";
 
-      // Get all Mondays in selected month
       let date = new Date(year, month, 1);
       while (date.getDay() !== 1) {
         date.setDate(date.getDate() + 1);
@@ -488,7 +504,7 @@
       const alreadyDismissed = localStorage.getItem("installBannerDismissed") === "true";
 
       if (isStandalone || alreadyDismissed) {
-        return; // already installed, or user said no thanks before
+        return;
       }
 
       dismissBtn.addEventListener("click", () => {
@@ -497,7 +513,6 @@
       });
 
       if (isIOS) {
-        // iOS has no programmatic install API — show instructions instead
         title.textContent = "Add to Home Screen";
         desc.textContent = "Tap the Share icon below, then \"Add to Home Screen\" — this is required for notifications to work on iPhone.";
         actionBtn.textContent = "Got it";
@@ -506,7 +521,6 @@
         });
         banner.style.display = "flex";
       } else {
-        // Android/Chrome: listen for the native install prompt
         let deferredPrompt = null;
         window.addEventListener("beforeinstallprompt", (e) => {
           e.preventDefault();
@@ -599,7 +613,7 @@
               OneSignal.User.PushSubscription.optOut();
             }
           } catch (e) {
-            // even if this fails, we still clear local state below so the UI reflects "off"
+            // clear local state
           }
           localStorage.setItem("trashNotifyEnabled", "false");
           offBtn.disabled = false;
@@ -663,10 +677,8 @@
         }
 
         if (window.oneSignalReady) {
-          // Already initialized from a previous click/load — use it directly, no re-queuing
           handleWithOneSignal(window.oneSignalReady);
         } else {
-          // First time — wait for the SDK to finish loading via the deferred queue
           window.OneSignalDeferred = window.OneSignalDeferred || [];
           window.OneSignalDeferred.push(handleWithOneSignal);
         }
