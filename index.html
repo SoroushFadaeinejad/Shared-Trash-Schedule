@@ -12,7 +12,7 @@
   <!-- Fonts: Playfair Display (Headings), Plus Jakarta Sans (UI Body), IBM Plex Mono (Data/Dates) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Playfair+Display:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Web App Manifest -->
   <link rel="manifest" href="manifest.json">
@@ -49,14 +49,20 @@
       --danger: #A6472A;
     }
     * { box-sizing: border-box; }
+    html {
+      height: 100%;
+      background-color: var(--bg);
+      overscroll-behavior-y: none;
+    }
     body {
       font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background-color: var(--bg);
       margin: 0;
-      padding: 20px;
-      padding-top: calc(20px + env(safe-area-inset-top, 44px));
+      min-height: 100%;
+      padding: calc(20px + env(safe-area-inset-top, 0px)) 20px calc(20px + env(safe-area-inset-bottom, 0px)) 20px;
       color: var(--ink);
       -webkit-font-smoothing: antialiased;
+      overscroll-behavior-y: none;
     }
     .card {
       background: var(--surface);
@@ -67,6 +73,9 @@
       margin: 0 auto 16px auto;
       text-align: center;
       box-shadow: 0 4px 12px rgba(26, 34, 51, 0.03);
+    }
+    .card:last-of-type {
+      margin-bottom: 0;
     }
     .brand-icon {
       margin-bottom: 12px;
@@ -117,17 +126,17 @@
     .highlight-date {
       font-family: 'IBM Plex Mono', monospace;
       font-size: 14px;
-      font-weight: 500;
+      font-weight: 600;
       color: var(--ink-soft);
       margin-bottom: 6px;
     }
     .highlight-unit {
-      font-family: 'Playfair Display', Georgia, serif;
-      font-size: 50px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
       font-weight: 700;
-      color: var(--ink);
+      color: var(--brass-dark);
+      letter-spacing: 0.02em;
       line-height: 1;
-      letter-spacing: -0.01em;
     }
     .selector {
       display: flex;
@@ -352,7 +361,7 @@
       <div class="notify-status" id="notify-status">Choose your unit, then tap enable. On iPhone, add this site to your Home Screen first for notifications to work.</div>
     </div>
     <div id="notify-collapsed-view" class="notify-collapsed" style="display: none;">
-      <span>🔔 Notified for unit <strong id="notify-collapsed-unit"></strong></span>
+      <span>🔔 Notified for unit <strong id="notify-collapsed-unit" class="unit-tag" style="font-weight: 700;"></strong></span>
       <div class="notify-collapsed-actions">
         <button id="notify-change-btn" class="notify-change-btn">Change</button>
         <button id="notify-off-btn" class="notify-change-btn notify-off-btn">Turn Off</button>
@@ -452,7 +461,7 @@
       let daysUntilMonday = (1 - dayOfWeek + 7) % 7;
       nextMon.setDate(nextMon.getDate() + daysUntilMonday);
 
-      document.getElementById("current-date").textContent = nextMon.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+      document.getElementById("current-date").textContent = nextMon.toLocaleDateString("en-US", { month: "short", day: "numeric" });
       document.getElementById("current-unit").textContent = getUnitForDate(nextMon);
 
       renderSchedule();
