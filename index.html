@@ -7,9 +7,15 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Trash Schedule">
-  <meta name="theme-color" content="#1A2233">
+  <meta name="theme-color" content="#F5F4F0">
 
-  <!-- Fonts: Playfair Display (Headings), Plus Jakarta Sans (UI Body), IBM Plex Mono (Data/Dates) -->
+  <!-- Open Graph Meta Tags for Rich Link Sharing -->
+  <meta property="og:title" content="Woodward Trash Schedule">
+  <meta property="og:description" content="View upcoming trash pickup duties and schedule rotations.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="apple-touch-icon.png">
+
+  <!-- Fonts: Playfair Display, Plus Jakarta Sans, IBM Plex Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -22,6 +28,9 @@
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 
+  <!-- OneSignal SDK -->
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+
   <style>
     :root {
       --bg: #F5F4F0;
@@ -31,7 +40,6 @@
       --muted: #7A8194;
       --brass: #A9824C;
       --brass-dark: #8A6B3D;
-      --blue-accent: #2A4365;
       --line: #DEDACD;
       --danger: #A6472A;
     }
@@ -73,7 +81,7 @@
     .logo-svg {
       width: 38px;
       height: 38px;
-      color: var(--blue-accent);
+      color: var(--brass-dark);
     }
     h1 {
       font-family: 'Playfair Display', Georgia, serif;
@@ -91,7 +99,6 @@
       letter-spacing: 0.14em;
       margin-bottom: 6px;
     }
-    /* Plaque: signature element for current duty */
     .plaque {
       border: 1px solid var(--brass);
       border-radius: 4px;
@@ -124,6 +131,46 @@
       color: var(--brass-dark);
       letter-spacing: 0.02em;
       line-height: 1;
+    }
+    .notify-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .notify-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .notify-desc {
+      font-size: 13px;
+      color: var(--ink-soft);
+      line-height: 1.4;
+      margin: 0;
+    }
+    .notify-btn {
+      background: var(--ink);
+      color: var(--bg);
+      border: none;
+      border-radius: 4px;
+      padding: 10px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: opacity 0.2s;
+    }
+    .notify-btn:hover {
+      opacity: 0.9;
+    }
+    .notify-btn.off-btn {
+      background: transparent;
+      border: 1px solid var(--line);
+      color: var(--muted);
     }
     .selector {
       display: flex;
@@ -252,11 +299,11 @@
 
   <div class="card">
     <div class="brand-icon">
-      <!-- Blue Match SVG Logo -->
+      <!-- Matching Warm Brass Logo Icon -->
       <svg class="logo-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 6h18"></path>
-        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+        <path d="M3 6h18" stroke="var(--ink)"></path>
+        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" stroke="var(--ink)"></path>
+        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" stroke="var(--ink)"></path>
         <line x1="10" y1="11" x2="10" y2="17" stroke="var(--brass)"></line>
         <line x1="14" y1="11" x2="14" y2="17" stroke="var(--brass)"></line>
       </svg>
@@ -269,6 +316,19 @@
     </div>
   </div>
 
+  <!-- Restored Notification Subscription Card -->
+  <div class="card notify-card" id="notify-card">
+    <div class="notify-title">Notifications</div>
+    <p class="notify-desc" id="notify-desc">Subscribe to get reminders for latest updates and schedule changes. Disable anytime.</p>
+    <button class="notify-btn" id="notify-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+      </svg>
+      <span id="notify-btn-text">Enable Notifications</span>
+    </button>
+  </div>
+
   <div class="card">
     <div class="selector">
       <select id="year-select"></select>
@@ -278,7 +338,6 @@
   </div>
 
   <script>
-    // Pattern base: Monday, July 6, 2026 is 73
     const baseDate = new Date(2026, 6, 6); // July 6, 2026 (Monday)
     const rotation = ["73", "71", "73A", "71A"];
 
@@ -291,7 +350,7 @@
     }
 
     function getLastMondayOfMonth(year, month) {
-      let d = new Date(year, month + 1, 0); // last calendar day of the month
+      let d = new Date(year, month + 1, 0);
       while (d.getDay() !== 1) {
         d.setDate(d.getDate() - 1);
       }
@@ -363,7 +422,6 @@
       };
       document.getElementById("month-select").onchange = renderSchedule;
 
-      // Find next Monday for current duty
       let nextMon = new Date(today.getFullYear(), today.getMonth(), today.getDate());
       let dayOfWeek = nextMon.getDay();
       let daysUntilMonday = (1 - dayOfWeek + 7) % 7;
@@ -373,6 +431,7 @@
       document.getElementById("current-unit").textContent = getUnitForDate(nextMon);
 
       renderSchedule();
+      setupNotifications();
     }
 
     function renderSchedule() {
@@ -396,6 +455,39 @@
 
         date.setDate(date.getDate() + 7);
       }
+    }
+
+    // --- Notification Handler Logic ---
+    function setupNotifications() {
+      const btn = document.getElementById("notify-btn");
+      const btnText = document.getElementById("notify-btn-text");
+      const desc = document.getElementById("notify-desc");
+
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(async function(OneSignal) {
+        const isOptedIn = await OneSignal.User.PushSubscription.optedIn;
+
+        if (isOptedIn) {
+          btnText.textContent = "Disable Notifications";
+          btn.classList.add("off-btn");
+          desc.textContent = "Reminders are currently active. You can turn them off at any time.";
+        }
+
+        btn.addEventListener("click", async () => {
+          const currentlyOptedIn = await OneSignal.User.PushSubscription.optedIn;
+          if (currentlyOptedIn) {
+            await OneSignal.User.PushSubscription.optOut();
+            btnText.textContent = "Enable Notifications";
+            btn.classList.remove("off-btn");
+            desc.textContent = "Subscribe to get reminders for latest updates and schedule changes. Disable anytime.";
+          } else {
+            await OneSignal.User.PushSubscription.optIn();
+            btnText.textContent = "Disable Notifications";
+            btn.classList.add("off-btn");
+            desc.textContent = "Reminders are currently active. You can turn them off at any time.";
+          }
+        });
+      });
     }
 
     init();
